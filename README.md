@@ -8,11 +8,13 @@ Specter is an algorithm for the analysis of data-independent acquisition mass sp
 2. A spectral library in blib format.
 3. A mass accuracy parameter, specified in parts-per-million. 
 
-The output of Specter is a .csv file describing the total ion intensities (= sum of fragment ion intensities) of each precursor in the spectral library at each retention time point of the experiment. A typical row of this output file looks like this:
+The output of Specter is a .csv file describing the total ion intensities (= sum of fragment ion intensities) of each precursor in the spectral library at each retention time point of the experiment. A snippet of the typical output file looks like this:
 ```
 Scan index    Retention time (s)    Precursor sequence     Precursor charge    Total ion intensity
-  10032          268.3763              ETLDASLPSDYLK               2                1,569,034
-```
+  10032          268.3763              ETLDASLPSDYLK               2                  1,569,034
+  10032          268.3763             NPAADAGSNNASKK               2              3,689,112,580
+  10033          268.4273                 IVLVDDSIVR               2                    722,175
+     ```
 Specter currently requires the cluster-computing framework Apache Spark; a cloud framework and accompanying website will appear in the future. 
 
 ## Running a Specter job
@@ -40,6 +42,6 @@ would tell Specter to analyze the first 100,000 MS2 spectra in the Orbitrap DIA 
 
 ## System requirements
 
-Specter requires the use of Apache Spark (with the PySpark API) and Python >= 2.7.9 (Specter hasn't been tested with Python 3). The python packages pymzml and cvxopt are also required; depending on the administrative permissions for your cluster, this may necessitate use of an Anaconda environment. The Specter job commands above must be run from the directory containing the scripts Specter_Spark.py and sparse_nnls.py from this repository. 
+Specter requires Apache Spark (with the PySpark API) and Python >= 2.7.9 (Specter hasn't been tested with Python 3). The python packages pymzml and cvxopt are also required; depending on the administrative permissions for your cluster, this may necessitate use of an Anaconda environment. The Specter job commands above must be run from the directory containing the scripts Specter_Spark.py and sparse_nnls.py from this repository. 
 
 
