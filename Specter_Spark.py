@@ -114,7 +114,7 @@ def RegressSpectraOntoLibrary(DIASpectraIterator,Library,tol):
             NonzeroCoeffs = [c for c in LibraryCoeffs if c != 0]
             NonzeroCoeffsAboveThreshold = NonzeroCoeffs
             
-            Output = [[0,index,0,0,0,0,tol]]   
+            Output = [[0,index,0,0,0,0]]   
         
             if len(NonzeroCoeffs) > 0:        
                 RefSpectraIDs = [RefPeptideCandidates[j] for j in range(len(RefPeptideCandidates)) if LibraryCoeffs[j] != 0]
@@ -234,8 +234,8 @@ if __name__ == "__main__":
     
     output = res.mapPartitions(partial(RegressSpectraOntoLibrary, Library=BroadcastLibrary, tol=delta*1e-6)).collect()  
     
-    output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
-                        output[i][j][4],output[i][j][5],output[i][j][6]] for i in range(len(output)) for j in range(len(output[i]))]
+    output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],output[i][j][4],output[i][j][5]] 
+	      			for i in range(len(output)) for j in range(len(output[i]))]
     
     absolutePath = mzMLname.rsplit('/',1)[0]
     noPathName = mzMLname.rsplit('/',1)[1]
