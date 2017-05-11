@@ -242,7 +242,7 @@ if __name__ == "__main__":
     if '/' in libName:
         libName = libName.rsplit('/',1)[1]
     
-    outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_SpecterCoeffs_'+libName+'.csv')    
+    outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+libName+'_SpecterCoeffs.csv')    
     
     with open(outputPath, "ab") as f:
         writer = csv.writer(f)
