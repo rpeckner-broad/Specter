@@ -26,9 +26,9 @@ spark-submit --driver-memory <mem> Specter_Spark.py <mzMLname> <blibName> <index
 where the bracketed arguments are as follows:
 
 * mem: The amount of memory to be provisioned to the Spark driver node. 
-* mzMLname: the full path to the mzML file containing the DIA data to be analyzed, without the mzML extension.
-* blibName: the name of the blib file containing the spectral library, without the blib extension. 
-* index: the first or last index of the subset of MS2 spectra to be analyzed 
+* mzMLname: The full path to the mzML file containing the DIA data to be analyzed, without the mzML extension.
+* blibName: The name of the blib file containing the spectral library, without the blib extension. 
+* index: The first or last index of the subset of MS2 spectra to be analyzed. 
 * StartOrEnd: Should index be interpreted as the first (StartOrEnd = "start") or last (StartOrEnd = "end") index of the spectra to be analyzed? This is useful for breaking jobs into smaller pieces to respect cluster memory constraints. 
 * numPartitions: The number of partitions Spark will use to parallelize the MS2 spectra. A reasonable starting choice is five times the number of cluster CPUs. 
 * instrumentType: This can be one of 'orbitrap','tof', or 'other'. Use of this argument in the first two cases helps avoid certain known issues with mzMLs coming from data converted from these instrument types. 
