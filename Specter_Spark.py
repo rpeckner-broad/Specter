@@ -147,7 +147,7 @@ if __name__ == "__main__":
     if len(args) == 7:
         instrument=args[6]
 
-    delta = 1e-5
+    delta = 10
     if len(args) == 8:
     	delta=float(args[7])
         
