@@ -38,7 +38,7 @@ For example, the command
 ```bash
 spark-submit --driver-memory 10g Specter_Spark.py /rpeckner/data/20170501_PhosphoDIARun1 /rpeckner/libs/HumanPhosphoLib 100000 end 200 orbitrap 10
 ```
-would tell Specter to analyze the first 100,000 MS2 spectra in the Orbitrap DIA experiment file /rpeckner/data/20170501_PhosphoDIARun1.mzML using the spectral library /rpeckner/libs/HumanPhosphoLib.blib with a mass tolerance parameter of 10 p.p.m., 200 partitions of the associated Spark RDD (the elements of this RDD correspond to the individual MS2 spectra), and 10g RAM available to the driver node.
+would tell Specter to analyze the first 100,000 MS2 spectra in the Orbitrap DIA experiment file /rpeckner/data/20170501_PhosphoDIARun1.mzML using the spectral library /rpeckner/libs/HumanPhosphoLib.blib with a mass tolerance parameter of 10 p.p.m., 200 partitions of the associated Spark RDD (the elements of this RDD correspond to the individual MS2 spectra), and 10g RAM available to the driver node. Specter will create a subdirectory 'SpecterResults' of the working directory, into which the results file will be written.
 
 ## System requirements
 
