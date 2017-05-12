@@ -2,7 +2,7 @@
 
 ## Description
 
-Specter is an algorithm for the analysis of data-independent acquisition mass spectrometry experiments based on linear deconvolution. It can analyze data from any instrument type and window acquisition scheme. The required user inputs are
+Specter is an algorithm for the targeted analysis of data-independent acquisition mass spectrometry experiments based on linear deconvolution. It can analyze data from any instrument type and window acquisition scheme. The required user inputs are
 
 1. A DIA data file in mzML format.
 2. A spectral library in blib format.
