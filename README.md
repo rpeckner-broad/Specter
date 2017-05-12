@@ -32,7 +32,7 @@ where the bracketed arguments are as follows:
 * StartOrEnd: Should index be interpreted as the first (StartOrEnd = "start") or last (StartOrEnd = "end") index of the spectra to be analyzed? This is useful for breaking jobs into smaller pieces to respect cluster memory constraints. 
 * numPartitions: The number of partitions Spark will use to parallelize the MS2 spectra. A reasonable starting choice is five times the number of cluster CPUs. 
 * instrumentType: This can be one of 'orbitrap','tof', or 'other'. Use of this argument in the first two cases helps avoid certain known issues with mzMLs coming from data converted from these instrument types. 
-* tol: The instrument mass tolerance, in parts-per-million.
+* tol: The instrument mass accuracy, in parts-per-million.
 
 For example, the command
 ```bash
