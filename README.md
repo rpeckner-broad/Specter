@@ -15,7 +15,7 @@ Scan index    Retention time (s)    Precursor sequence     Precursor charge    T
   10032          268.3763             NPAADAGSNNASKK               2              3,689,112,580
   10033          268.4273                 IVLVDDSIVR               2                    722,175
 ```
-Specter currently requires the cluster-computing framework Apache Spark; a cloud framework and accompanying website will appear in the future. 
+Specter currently requires the cluster-computing framework Apache Spark; a cloud framework and accompanying website will appear in the future. See ```SpecterUserGuide.pdf``` for detailed instructions on how to set up and use Specter.
 
 ## Running a Specter job
 
