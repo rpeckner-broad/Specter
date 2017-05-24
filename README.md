@@ -15,7 +15,7 @@ Scan index    Retention time (s)    Precursor sequence     Precursor charge    T
 ```
 with the identifications and quantifications based on these scan-by-scan total ion intensities reported separately:
 ```
-Precursor sequence    Precursor charge      Quant 									
+Precursor sequence    Precursor charge      Quant
    ETLDASLPSDYLK              2          148,110,338
   NPAADAGSNNASKK              2           32,234,856
       IVLVDDSIVR              2           11,768,772
