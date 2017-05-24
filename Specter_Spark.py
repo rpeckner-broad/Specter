@@ -397,11 +397,6 @@ if __name__ == "__main__":
     output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
                         output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
     
-    absolutePath = mzMLname.rsplit('/',1)[0]
-    noPathName = mzMLname.rsplit('/',1)[1]
-    if '/' in libName:
-        libName = libName.rsplit('/',1)[1]
-    
     outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_SpecterCoeffs.csv')     
     
     with open(outputPath, "ab") as f:
@@ -414,11 +409,6 @@ if __name__ == "__main__":
     
     output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
                         output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
-    
-    absolutePath = mzMLname.rsplit('/',1)[0]
-    noPathName = mzMLname.rsplit('/',1)[1]
-    if '/' in libName:
-        libName = libName.rsplit('/',1)[1]
     
     outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_SpecterCoeffsDecoys.csv')     
     
