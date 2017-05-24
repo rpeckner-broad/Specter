@@ -22,7 +22,6 @@ __license__ = 'WTFPL'
  
 import numpy as np
 import sys
-#sys.path.append("/home/unix/rpeckner/anaconda2/lib/python2.7/site-packages/cvxopt/")
 from cvxopt import solvers, matrix, spmatrix, mul
 import itertools
 from scipy import sparse
