@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 22 14:45:53 2016
-
-@author: rpeckner
-"""
 
 #!/usr/bin/python
  
