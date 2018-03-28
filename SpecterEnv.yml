@@ -3,6 +3,7 @@ channels: !!python/tuple
 - bioconda
 - defaults
 - conda-forge
+- anaconda
 dependencies:
 - _license=1.1=py27_1
 - _nb_ext_conf=0.2.0=py27_0
@@ -182,8 +183,6 @@ dependencies:
 - rope=0.9.4=py27_1
 - ruamel_yaml=0.11.14=py27_1
 - scandir=1.4=py27_0
-- scikit-image=0.12.3=np111py27_1
-- scikit-learn=0.18.1=np111py27_1
 - scipy=0.18.1=np111py27_1
 - seaborn=0.7.1=py27_0
 - setuptools=27.2.0=py27_0
@@ -195,13 +194,11 @@ dependencies:
 - sockjs-tornado=1.0.3=py27_0
 - sphinx=1.5.1=py27_0
 - sphinx_rtd_theme=0.1.9=py27_0
-- spyder=3.1.2=py27_0
 - sqlalchemy=1.1.5=py27_0
 - sqlite=3.13.0=0
 - ssl_match_hostname=3.4.0.2=py27_1
 - statsmodels=0.6.1=np111py27_1
 - subprocess32=3.2.7=py27_0
-- sympy=1.0=py27_0
 - terminado=0.6=py27_0
 - tk=8.5.18=0
 - toolz=0.8.2=py27_0
