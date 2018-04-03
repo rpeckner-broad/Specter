@@ -28,12 +28,14 @@ dependencies:
   - nbformat=4.4.0=py27hed7f2b2_0
   - numpy=1.11.2=py27_0
   - openssl=1.0.2j=0
+  - pandas=0.21.1=py27h38cdd7d_0
   - pip=8.1.2=py27_0
   - plotly=2.5.1=py27_0
   - pycparser=2.18=py27hefa08c5_1
   - pyopenssl=17.4.0=py27h3149609_0
   - pysocks=1.6.8=py27_0
   - python=2.7.11=5
+  - python-dateutil=2.7.2=py27_0
   - pytz=2018.3=py27_0
   - readline=6.2=2
   - requests=2.18.4=py27hc5b0589_1
