@@ -1,20 +1,50 @@
 name: SpecterEnv
 channels:
-- defaults
+  - blaze
+  - bioconda
+  - defaults
 dependencies:
-- cvxopt=1.1.8=py27_3
-- libgfortran=3.0.0=1
-- mkl=11.3.3=0
-- numpy=1.11.2=py27_0
-- openssl=1.0.2j=0
-- pip=8.1.2=py27_0
-- python=2.7.11=5
-- readline=6.2=2
-- scipy=0.18.1=np111py27_0
-- setuptools=27.2.0=py27_0
-- sqlite=3.13.0=0
-- tk=8.5.18=0
-- wheel=0.29.0=py27_0
-- zlib=1.2.8=3
-prefix: /home/unix/rpeckner/.conda/envs/SpecterEnv
+  - pymzml=0.7.8=py27_0
+  - py4j=0.8.2.1=py27_0
+  - asn1crypto=0.24.0=py27_0
+  - certifi=2018.1.18=py27_0
+  - cffi=1.11.5=py27h9745a5d_0
+  - chardet=3.0.4=py27hfa10054_1
+  - cryptography=2.0.3=py27hea39389_1
+  - cvxopt=1.1.8=py27_3
+  - decorator=4.2.1=py27_0
+  - enum34=1.1.6=py27h99a27e9_1
+  - functools32=3.2.3.2=py27h4ead58f_1
+  - idna=2.6=py27h5722d68_1
+  - ipaddress=1.0.19=py27_0
+  - ipython_genutils=0.2.0=py27h89fb69b_0
+  - jsonschema=2.6.0=py27h7ed5aa4_0
+  - jupyter_core=4.4.0=py27h345911c_0
+  - libffi=3.2.1=hd88cf55_4
+  - libgcc-ng=7.2.0=hdf63c60_3
+  - libgfortran=3.0.0=1
+  - libstdcxx-ng=7.2.0=hdf63c60_3
+  - mkl=11.3.3=0
+  - nbformat=4.4.0=py27hed7f2b2_0
+  - numpy=1.11.2=py27_0
+  - openssl=1.0.2j=0
+  - pip=8.1.2=py27_0
+  - plotly=2.5.1=py27_0
+  - pycparser=2.18=py27hefa08c5_1
+  - pyopenssl=17.4.0=py27h3149609_0
+  - pysocks=1.6.8=py27_0
+  - python=2.7.11=5
+  - pytz=2018.3=py27_0
+  - readline=6.2=2
+  - requests=2.18.4=py27hc5b0589_1
+  - scipy=0.18.1=np111py27_0
+  - setuptools=27.2.0=py27_0
+  - six=1.11.0=py27h5f960f1_1
+  - sqlite=3.13.0=0
+  - tk=8.5.18=0
+  - traitlets=4.3.2=py27hd6ce930_0
+  - urllib3=1.22=py27ha55213b_0
+  - wheel=0.29.0=py27_0
+  - zlib=1.2.8=3
+prefix: /home/ec2-user/conda/envs/SpecterEnv
 
