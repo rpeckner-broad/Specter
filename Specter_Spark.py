@@ -346,14 +346,14 @@ if __name__ == "__main__":
 
     if StartOrEnd == "end":
         if instrument == 'orbitrap':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['scan time'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i < Index]
+                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i < Index]
         if instrument == 'tof':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['scan time'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i < Index]
+                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i < Index]
     else:
         if instrument == 'orbitrap':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['scan time'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i >= Index]
+                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i >= Index]
         if instrument == 'tof':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['scan time'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i >= Index]
+                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i >= Index]
 
 
     print "Loaded {} MS2 spectra from {} in {} minutes.".format(len(res),path,round((time.time()-start)/60,1))
