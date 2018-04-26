@@ -122,15 +122,15 @@ def RegressSpectraOntoLibrary(DIASpectrum,Library,tol,maxWindowOffset):
                 
             return Output
 
-def RegressSpectraOntoLibraryWithDecoys(DIASpectrum,precMZ,precRT,index,windowWidth,Library,tol,maxWindowOffset):
+def RegressSpectraOntoLibraryWithDecoys(DIASpectrum,Library,tol,maxWindowOffset):
            
         
-            #precMZ = float(DIASpectrum[1])     
-            #precRT = float(DIASpectrum[2])  #MS2 scan retention time, in minutes
-            #index = DIASpectrum[3]
-            #windowWidth = DIASpectrum[4]            
+            precMZ = float(DIASpectrum[1])     
+            precRT = float(DIASpectrum[2])  #MS2 scan retention time, in minutes
+            index = DIASpectrum[3]
+            windowWidth = DIASpectrum[4]            
             
-            DIASpectrum = np.array(DIASpectrum)
+            DIASpectrum = np.array(DIASpectrum[0])
 
             RefSpectraLibrary = Library
             
