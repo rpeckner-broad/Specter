@@ -44,6 +44,7 @@ dependencies:
   - six=1.11.0=py27h5f960f1_1
   - sqlite=3.13.0=0
   - tk=8.5.18=0
+  - tqdm=4.23.0=py27_0
   - traitlets=4.3.2=py27hd6ce930_0
   - urllib3=1.22=py27ha55213b_0
   - wheel=0.29.0=py27_0
