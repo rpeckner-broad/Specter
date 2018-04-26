@@ -16,6 +16,6 @@ Precursor sequence    Precursor charge      Quant
   NPAADAGSNNASKK              2           32,234,856
       IVLVDDSIVR              2           11,768,772
 ```
-Specter currently requires the cluster-computing framework Apache Spark; a cloud framework and accompanying website will appear in the future. See ```SpecterUserGuide.pdf``` for detailed instructions on how to set up and use Specter. 
+Specter can be run either on a standard desktop/laptop or, for much faster results, on a computing cluster using the distributed computing framework Apache Spark; a cloud framework and accompanying website will appear in the future. See ```SpecterStandaloneUserGuide.pdf``` for instructions on how to set up and use Specter without a computing cluster, and  ```SpecterSparkUserGuide.pdf``` for instructions on how to set up and use Specter on a computing cluster with Spark. 
 
 
