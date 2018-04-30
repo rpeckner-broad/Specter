@@ -156,7 +156,13 @@ def RegressSpectraOntoLibraryWithDecoys(DIASpectrum,Library,tol,maxWindowOffset)
                                                                        precMZ - maxWindowOffset <= float(spectrum['PrecursorMZ']) <= precMZ - maxWindowOffset/2]                 
                     MassWindowDecoyCandidates = [("DECOY_"+key[0],key[1]) for key,spectrum in RefSpectraLibrary.iteritems() if 
                                                                         precMZ - maxWindowOffset <= float(spectrum['PrecursorMZ']) <= precMZ - maxWindowOffset/2]
-                 
+                
+                #MERGING OF POINTS IN ACQUIRED SPECTRUM WITH NEARBY M/Z COORDINATES
+                MergedDIASpecCoordIndices = np.searchsorted(DIASpectrum[:,0]+tol*DIASpectrum[:,0],DIASpectrum[:,0])
+                MergedDIASpecCoords = DIASpectrum[np.unique(MergedDIASpecCoordIndices),0]
+                MergedDIASpecIntensities = [np.mean(DIASpectrum[np.where(MergedDIASpecCoordIndices == i)[0],1]) for i in np.unique(MergedDIASpecCoordIndices)]
+                DIASpectrum = np.array((MergedDIASpecCoords,MergedDIASpecIntensities)).transpose()
+                
                 #FILTER LIBRARY SPECTRA BY THE CONDITION THAT SOME NUMBER OF THEIR 10 MOST INTENSE PEAKS BELONG TO THE DIA SPECTRUM
                 CentroidBreaks = np.concatenate((DIASpectrum[:,0]-tol*DIASpectrum[:,0],DIASpectrum[:,0]+tol*DIASpectrum[:,0]))               
                 CentroidBreaks.sort()
@@ -383,15 +389,11 @@ if __name__ == "__main__":
     SpectraLibrary = {k:SpectraLibrary[k] for k in SpectraLibrary if SpectraLibrary[k]['PrecursorMZ'] < MaxWindowPrecMZ}
 
     pool = multiprocessing.Pool(numProcessors)
-    
     with closing(pool) as p:
-        results = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibrary,Library=SpectraLibrary,tol=delta*1e-6,maxWindowOffset=MaxOffset), res), total=len(res)))
-        p.terminate()  
-
-    output = [p.get() for p in results]
-    
-    output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
+        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibrary,Library=SpectraLibrary,tol=delta*1e-6,maxWindowOffset=MaxOffset), res), total=len(res)))
+        output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
                         output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
+        p.terminate()  
     
     outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_SpecterCoeffs.csv')     
     
@@ -401,14 +403,12 @@ if __name__ == "__main__":
            
     print "Output written to {}.".format(outputPath)
 
+    pool = multiprocessing.Pool(numProcessors)
     with closing(pool) as p:
-        results = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibraryWithDecoys,Library=SpectraLibrary,tol=delta*1e-6,maxWindowOffset=MaxOffset), res), total=len(res)))
-        p.terminate()
-    
-    output = [p.get() for p in results]
-
-    output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
+        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibraryWithDecoys,Library=SpectraLibrary,tol=delta*1e-6,maxWindowOffset=MaxOffset), res), total=len(res)))
+        output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
                         output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
+        p.terminate()
     
     outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_SpecterCoeffsDecoys.csv')     
     
