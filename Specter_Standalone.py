@@ -382,6 +382,7 @@ if __name__ == "__main__":
         writer.writerows(header)      
            
     print "Header written to {}.".format(headerPath)
+    print "Analyzing MS2 spectra:"
 
     MaxWindowPrecMZ = max(np.array([x[1] for x in res])) + max(np.array([x[4] for x in res]))
     MaxOffset = max(np.array([x[4] for x in res]))
@@ -402,6 +403,7 @@ if __name__ == "__main__":
         writer.writerows(output)      
            
     print "Output written to {}.".format(outputPath)
+    print "Analyzing MS2 spectra with decoys:"
 
     pool = multiprocessing.Pool(numProcessors)
     with closing(pool) as p:
