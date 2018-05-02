@@ -200,9 +200,9 @@ def RegressSpectraOntoLibraryWithDecoys(DIASpectraIterator,Library,tol,maxWindow
                     DecoyLibrarySparseMatrixEntries = np.array([NormalizedDecoyCandidateList[k][i] for k in range(len(NormalizedDecoyCandidateList)) for i in range(len(DecoyCandidatesLocations[k])) 
                                                                              if DecoyCandidatesLocations[k][i] % 2 == 1])
                                                                  
-                             
-                    UniqueRowIndices = [i for i in set(np.concatenate((RefSpectraLibrarySparseRowIndices,DecoyLibrarySparseRowIndices)))]
-                    UniqueRowIndices.sort()
+                    
+                    UniqueRowIndices = np.unique(np.concatenate((RefSpectraLibrarySparseRowIndices,DecoyLibrarySparseRowIndices)))
+                    UniqueRowIndices = np.array(np.sort(UniqueRowIndices),dtype=int)         
                     
                     DIASpectrumIntensities=DIASpectrum[UniqueRowIndices,1]  #Project the spectrum to those m/z bins at which at least one column of the coefficient matrix has a nonzero entry
 
