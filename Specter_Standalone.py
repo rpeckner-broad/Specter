@@ -302,7 +302,7 @@ if __name__ == "__main__":
     start = time.time()
     
     libPath = os.path.expanduser(libName+'.blib')
-    if os.path.exists(libPath):
+    if os.path.exists(libPath) and not os.path.exists(libName+'_PythonLibrary'):
         Lib = sqlite3.connect(libPath)
         LibPrecursorInfo = pd.read_sql("SELECT * FROM RefSpectra",Lib)
     
@@ -339,7 +339,7 @@ if __name__ == "__main__":
                 SpectraLibrary[precursorKey]['PrecursorRT'] = LibPrecursorInfo['retentionTime'][i]
 
     else:
-        SpectraLibrary = pickle.load(open(libName,"rb"))
+        SpectraLibrary = pickle.load(open(libName+'_PythonLibrary',"rb"))
         
     print "Library loaded in {} minutes".format(round((time.time()-start)/60,1))
     
