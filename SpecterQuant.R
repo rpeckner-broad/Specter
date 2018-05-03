@@ -338,6 +338,7 @@ quantsWithDecoys = QuantifyAllFromSpecterCoeffs(resultsWithDecoys,header=h)
 quantsWithDecoys$Type = ifelse(grepl("DECOY",quantsWithDecoys$RefPeptideSeq),"Decoy","Target")
 quantsWithDecoys = quantsWithDecoys[which(quantsWithDecoys$SpecterAreaQuant > 0),]
 
+if (length(which(quantsWithDecoys$Type == "Decoy")) > 0) {                                                 
 SpecterLDA = lda(Type~ MaxSpecterCoeff + PeakVariance + PeakSkewness + PeakKurtosis,
                  data = quantsWithDecoys)
 
@@ -359,7 +360,10 @@ cutoff = min(D$Score[which(fdr < 0.01)],na.rm=TRUE)
 D = D[which(D$Score >= cutoff),]
 quants = quants[which(paste(quants$RefPeptideSeq,quants$RefPrecursorCharge) %in% paste(D$PeptideSeq,D$PrecursorCharge)),]
 quants$Score = D$Score[match(paste(quants$RefPeptideSeq,quants$RefPrecursorCharge),paste(D$PeptideSeq,D$PrecursorCharge))]
-
+} else {
+  quants$Score = 1
+  }
+                                                 
 outputPath = gsub("_SpecterCoeffs.csv","_SpecterQuants.csv",resultsPath)
 write.csv(quants[c("RefPeptideSeq","RefPrecursorCharge","SpecterAreaQuant","Score")],file=outputPath,quote=FALSE,row.names=FALSE)
 
