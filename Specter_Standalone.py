@@ -297,6 +297,10 @@ if __name__ == "__main__":
     if len(args) == 8:
     	delta=float(args[7])
         
+    width = 0
+    if len(args) == 9:
+        width = float(args[8])    
+        
     #Cast the spectral library as a dictionary  
         
     start = time.time()
@@ -364,6 +368,8 @@ if __name__ == "__main__":
     print "Loaded {} MS2 spectra from {} in {} minutes.".format(len(res),path,round((time.time()-start)/60,1))
     
     res=[(res[i][0],float(res[i][1]),float(res[i][2]),float(res[i][3]),float(res[i+1][1]) - float(res[i][1])) for i in range(len(res)-1)]
+    if width > 0:
+        res=[(res[i][0],float(res[i][1]),float(res[i][2]),float(res[i][3]),width) for i in range(len(res)-1)]
     header=[[x[1],x[2],x[3]] for x in res]
 
     absolutePath = mzMLname.rsplit('/',1)[0]
