@@ -317,8 +317,8 @@ libName = strsplit(args[2],split="/")[[1]]
 libName = libName[length(libName)]
 dirName = dirName[-length(dirName)]
 dirName = paste(dirName,collapse="/")
-resultsPath = paste0(dirName,"/SpecterResults/",mzmlName,"_",libName,"_SpecterCoeffs.csv")
-headerPath = paste0(dirName,"/SpecterResults/",mzmlName,"_",libName,"_header.csv")
+resultsPath = file.path(dirName, "SpecterResults", paste0(mzmlName, "_", libName, "_SpecterCoeffs.csv"))
+headerPath = file.path(dirName, "SpecterResults", paste0(mzmlName, "_", libName, "_header.csv"))
 decoyResultsPath = paste0(gsub(".csv","",resultsPath),"Decoys.csv")
 
 h = read.csv(headerPath,header=FALSE,stringsAsFactors=FALSE)

@@ -372,16 +372,16 @@ if __name__ == "__main__":
         res=[(res[i][0],float(res[i][1]),float(res[i][2]),float(res[i][3]),width) for i in range(len(res)-1)]
     header=[[x[1],x[2],x[3]] for x in res]
 
-    absolutePath = mzMLname.rsplit('/',1)[0]
-    noPathName = mzMLname.rsplit('/',1)[1]
-    if '/' in libName:
-        libName = libName.rsplit('/',1)[1]
-
-    outputDir = os.path.expanduser(absolutePath+'/SpecterResults')
+    absolutePath = os.path.dirname(mzMLname)
+    noPathName = os.path.basename(mzMLname)
+    libName = os.path.basename(libName)
+    
+    outputDir = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults'))
     if not os.path.exists(outputDir):
     	os.makedirs(outputDir)
 
-    headerPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_header.csv')     
+    headerPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
+                                                 '%s_%s_header.csv' % (noPathName, libName)))
     
     with open(headerPath, "ab") as f:
         writer = csv.writer(f)
@@ -402,7 +402,8 @@ if __name__ == "__main__":
                         output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
         p.terminate()  
     
-    outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_SpecterCoeffs.csv')     
+    outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
+                                                 '%s_%s_SpecterCoeffs.csv' % (noPathName, libName)))
     
     with open(outputPath, "ab") as f:
         writer = csv.writer(f)
@@ -418,7 +419,8 @@ if __name__ == "__main__":
                         output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
         p.terminate()
     
-    outputPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_SpecterCoeffsDecoys.csv')     
+    outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
+                                                 '%s_%s_SpecterCoeffsDecoys.csv' % (noPathName, libName)))
     
     with open(outputPath, "ab") as f:
         writer = csv.writer(f)
