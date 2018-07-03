@@ -290,7 +290,7 @@ if __name__ == "__main__":
         numProcessors = int(args[5])
     
     instrument = 'orbitrap'    
-    if len(args) == 7:
+    if len(args) >= 7:
         instrument=args[6]
 
     delta = 10
