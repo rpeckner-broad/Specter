@@ -48,6 +48,13 @@ libPath = os.path.expanduser(inputPath)
                 SpectraLibrary[precursorKey]['Spectrum'] = np.array((SpectrumMZ,SpectrumIntensities)).T
                 SpectraLibrary[precursorKey]['PrecursorMZ'] = LibPrecursorInfo['precursorMZ'][i]
                 SpectraLibrary[precursorKey]['PrecursorRT'] = LibPrecursorInfo['retentionTime'][i]
+            elif len(zlib.decompress(SpectrumMZ)) == 8*NumPeaks and len(zlib.decompress(SpectrumIntensities)) == 4*NumPeaks:
+                SpectraLibrary.setdefault(precursorKey,{})
+                SpectrumMZ = struct.unpack('d'*NumPeaks,zlib.decompress(SpectrumMZ))
+                SpectrumIntensities = struct.unpack('f'*NumPeaks,zlib.decompress(SpectrumIntensities))
+                SpectraLibrary[precursorKey]['Spectrum'] = np.array((SpectrumMZ,SpectrumIntensities)).T
+                SpectraLibrary[precursorKey]['PrecursorMZ'] = LibPrecursorInfo['precursorMZ'][i]
+                SpectraLibrary[precursorKey]['PrecursorRT'] = LibPrecursorInfo['retentionTime'][i]
 
 outputPath = inputPath+"_PythonLibrary"
 pickle.dump(SpectraLibrary,open(outputPath,"wb"))
