@@ -13,7 +13,7 @@ args = sys.argv
 inputPath = args[1]
 
 libPath = os.path.expanduser(inputPath)
-    if os.path.exists(libPath):
+if os.path.exists(libPath):
         Lib = sqlite3.connect(libPath)
         LibPrecursorInfo = pd.read_sql("SELECT * FROM RefSpectra",Lib)
     
