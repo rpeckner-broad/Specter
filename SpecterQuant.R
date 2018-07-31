@@ -60,6 +60,8 @@ QuantifyAllFromSpecterCoeffs = function(SpecterData,header) {
   Quants$PeakVariance = as.numeric(unlist(lapply(Quant,function(l) l[[8]][1])))
   Quants$PeakSkewness = as.numeric(unlist(lapply(Quant,function(l) l[[9]][1])))
   Quants$PeakKurtosis = as.numeric(unlist(lapply(Quant,function(l) l[[10]][1])))
+  Quants$PeakStart = as.numeric(unlist(lapply(Quant,function(l) l[[11]][1])))
+  Quants$PeakEnd = as.numeric(unlist(lapply(Quant,function(l) l[[12]][1])))                                               
   return(Quants)
 }
 
@@ -272,10 +274,6 @@ SpecterQuantifyPeptides = function(Data,Identifiers,i,header,IntensityCutoff=0,Q
       TimeAtTopOfPeak = DataOnUniformGrid$retentionTime[SmoothPeaks[1,2]]
       MaxCoeff=DataOnUniformGrid$Coeff[SmoothPeaks[1,2]]
       
-      start = SmoothPeaks[1,3]
-      end = SmoothPeaks[1,4]
-      
-      PeakDataOnUniformGrid = DataOnUniformGrid[start:end,]
       PeakCentralMoments = all.moments(scale(PeakDataOnUniformGrid$Coeff,center=FALSE),order.max = 4,central = TRUE)[3:5]
       
       BoxTest = Box.test(PeptideData$Coeff,type="Ljung-Box")
@@ -288,7 +286,9 @@ SpecterQuantifyPeptides = function(Data,Identifiers,i,header,IntensityCutoff=0,Q
       peakWidth = DataOnUniformGrid$retentionTime[end] - DataOnUniformGrid$retentionTime[start]
 
       result = list(Area=area,BoxTestPval=BoxTestPval,SNR=snr,RT=TimeAtTopOfPeak,MaxCoeff=MaxCoeff,PeakWidth=peakWidth,
-                    BoxTestPvalOnGrid=BoxTestPvalOnGrid,Variance=PeakCentralMoments[1],Skewness=PeakCentralMoments[2],Kurtosis=PeakCentralMoments[3])
+                    BoxTestPvalOnGrid=BoxTestPvalOnGrid,Variance=PeakCentralMoments[1],
+                    Skewness=PeakCentralMoments[2],Kurtosis=PeakCentralMoments[3],
+                   PeakStart=DataOnUniformGrid$retentionTime[start],DataOnUniformGrid$retentionTime[end])
     }
     return(result)
 }
@@ -365,5 +365,5 @@ quants$Score = D$Score[match(paste(quants$RefPeptideSeq,quants$RefPrecursorCharg
   }
                                                  
 outputPath = gsub("_SpecterCoeffs.csv","_SpecterQuants.csv",resultsPath)
-write.csv(quants[c("RefPeptideSeq","RefPrecursorCharge","SpecterAreaQuant","Score")],file=outputPath,quote=FALSE,row.names=FALSE)
+write.csv(quants[c("RefPeptideSeq","RefPrecursorCharge","SpecterAreaQuant","Score","PeakStart","PeakEnd")],file=outputPath,quote=FALSE,row.names=FALSE)
 
