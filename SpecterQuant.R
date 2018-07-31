@@ -45,7 +45,7 @@ QuantifyAllFromSpecterCoeffs = function(SpecterData,header) {
                                  seq(1,nrow(IDs))))
   
   f = function(k) {if (IsThereEnoughData[k]) {
-    SpecterQuantifyPeptides(SpecterData,IDs,k,header,RTWindow=FALSE)} else {list(0,1,0,0,0,0,1,0,0,0)}}
+    SpecterQuantifyPeptides(SpecterData,IDs,k,header,RTWindow=FALSE)} else {list(0,1,0,0,0,0,1,0,0,0,0,0)}}
   
   Quant = Map(f,seq(1,nrow(IDs)))
   Quants = IDs
@@ -251,7 +251,7 @@ SpecterQuantifyPeptides = function(Data,Identifiers,i,header,IntensityCutoff=0,Q
     snr = 0
     PeakCentralMoments = numeric(3)
     result = list(Area=area,BoxTestPval=BoxTestPval,SNR=snr,RT=TimeAtTopOfPeak,MaxCoeff=0,PeakWidth=0,BoxTestPvalOnGrid=BoxTestPvalOnGrid,
-                  Variance=0,Skewness=0,Kurtosis=0)
+                  Variance=0,Skewness=0,Kurtosis=0,PeakStart=0,PeakEnd=0)
     
     if (length(which(PeptideData$Coeff > 1) > 3) & !is.null(SmoothPeaks)) {
       MinScanIndex = min(PeptideData$Scan,na.rm=TRUE)
