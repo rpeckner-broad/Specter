@@ -24,103 +24,112 @@ import re
 import tqdm
 from contextlib import closing
 
-def RegressSpectraOntoLibrary(DIASpectrum,Library,tol,maxWindowOffset):     
-        
-            precMZ = float(DIASpectrum[1])     
-            precRT = float(DIASpectrum[2])  #MS2 scan retention time, in minutes
-            index = DIASpectrum[3]
-            windowWidth = DIASpectrum[4]
-            
-            DIASpectrum = np.array(DIASpectrum[0])
-            
-            RefSpectraLibrary = Library
+def RegressSpectraOntoLibrary(DIASpectrumIndex,Run,Library,headerPath,outputPath,tol,maxWindowOffset):
+                
+            spec = Run[DIASpectrumIndex]
+            if spec['ms level'] != 2.0:
+                pass
+            else:
+                precMZ = float(spec['precursors'][0]['mz'])    
+                precRT = float(spec['MS:1000016'])  #MS2 scan retention time, in minutes
+                index = DIASpectrumIndex
+                #windowWidth = DIASpectrum[4]
+                windowWidth = 10
+                with open(headerPath, "ab") as f:
+                    writer = csv.writer(f)
+                    writer.writerows([precMZ,precRT,index])  
+                
+                DIASpectrum = np.array(Run[DIASpectrumIndex].peaks)
+                RefSpectraLibrary = Library
 
-            LibraryCoeffs = []
-            
-            if len(DIASpectrum.shape) == 2:
+                LibraryCoeffs = []
                 
-                if windowWidth > 0:
-                    CandidateRefSpectraLibrary = [spectrum['Spectrum'] for key,spectrum in RefSpectraLibrary.iteritems() if 
-                                                                abs(float(spectrum['PrecursorMZ']) - precMZ) < windowWidth/2]
-                    MassWindowCandidates = [key for key,spectrum in RefSpectraLibrary.iteritems() if 
-                                                                abs(float(spectrum['PrecursorMZ']) - precMZ) < windowWidth/2]
-                else:
-                    CandidateRefSpectraLibrary = [spectrum['Spectrum'] for key,spectrum in RefSpectraLibrary.iteritems() if 
-                                                                        float(spectrum['PrecursorMZ']) > precMZ - maxWindowOffset/2]   
-                    MassWindowCandidates = [key for key,spectrum in RefSpectraLibrary.iteritems() if 
-                                                                        float(spectrum['PrecursorMZ']) > precMZ - maxWindowOffset/2]
-                
+                if len(DIASpectrum.shape) == 2:
+                    
+                    if windowWidth > 0:
+                        CandidateRefSpectraLibrary = [spectrum['Spectrum'] for key,spectrum in RefSpectraLibrary.iteritems() if 
+                                                                    abs(float(spectrum['PrecursorMZ']) - precMZ) < windowWidth/2]
+                        MassWindowCandidates = [key for key,spectrum in RefSpectraLibrary.iteritems() if 
+                                                                    abs(float(spectrum['PrecursorMZ']) - precMZ) < windowWidth/2]
+                    else:
+                        CandidateRefSpectraLibrary = [spectrum['Spectrum'] for key,spectrum in RefSpectraLibrary.iteritems() if 
+                                                                            float(spectrum['PrecursorMZ']) > precMZ - maxWindowOffset/2]   
+                        MassWindowCandidates = [key for key,spectrum in RefSpectraLibrary.iteritems() if 
+                                                                            float(spectrum['PrecursorMZ']) > precMZ - maxWindowOffset/2]
+                    
 
-                #MERGING OF POINTS IN ACQUIRED SPECTRUM WITH NEARBY M/Z COORDINATES
-                MergedDIASpecCoordIndices = np.searchsorted(DIASpectrum[:,0]+tol*DIASpectrum[:,0],DIASpectrum[:,0])
-                MergedDIASpecCoords = DIASpectrum[np.unique(MergedDIASpecCoordIndices),0]
-                MergedDIASpecIntensities = [np.mean(DIASpectrum[np.where(MergedDIASpecCoordIndices == i)[0],1]) for i in np.unique(MergedDIASpecCoordIndices)]
-                DIASpectrum = np.array((MergedDIASpecCoords,MergedDIASpecIntensities)).transpose()
-              
-                #FILTER LIBRARY SPECTRA BY THE CONDITION THAT SOME NUMBER OF THEIR 10 MOST INTENSE PEAKS BELONG TO THE DIA SPECTRUM
-                CentroidBreaks = np.concatenate((DIASpectrum[:,0]-tol*DIASpectrum[:,0],DIASpectrum[:,0]+tol*DIASpectrum[:,0]))               
-                CentroidBreaks = np.sort(CentroidBreaks)
+                    #MERGING OF POINTS IN ACQUIRED SPECTRUM WITH NEARBY M/Z COORDINATES
+                    MergedDIASpecCoordIndices = np.searchsorted(DIASpectrum[:,0]+tol*DIASpectrum[:,0],DIASpectrum[:,0])
+                    MergedDIASpecCoords = DIASpectrum[np.unique(MergedDIASpecCoordIndices),0]
+                    MergedDIASpecIntensities = [np.mean(DIASpectrum[np.where(MergedDIASpecCoordIndices == i)[0],1]) for i in np.unique(MergedDIASpecCoordIndices)]
+                    DIASpectrum = np.array((MergedDIASpecCoords,MergedDIASpecIntensities)).transpose()
+                  
+                    #FILTER LIBRARY SPECTRA BY THE CONDITION THAT SOME NUMBER OF THEIR 10 MOST INTENSE PEAKS BELONG TO THE DIA SPECTRUM
+                    CentroidBreaks = np.concatenate((DIASpectrum[:,0]-tol*DIASpectrum[:,0],DIASpectrum[:,0]+tol*DIASpectrum[:,0]))               
+                    CentroidBreaks = np.sort(CentroidBreaks)
+                    
+                    LocateReferenceCoordsInDIA = [np.searchsorted(CentroidBreaks,M[:,0]) for M in CandidateRefSpectraLibrary]
+                       
+                    TopTenPeaksCoordsInDIA = [np.searchsorted(CentroidBreaks,M[np.argsort(-M[:,1])[0:min(10,M.shape[0])],0]) for M in CandidateRefSpectraLibrary] 
+                    ReferencePeaksInDIA = [i for i in range(len(MassWindowCandidates)) if 
+                                                len([a for a in TopTenPeaksCoordsInDIA[i] if a % 2 == 1]) > 5] #min(3,CandidateRefSpectraLibrary[i].shape[0])]     
+                    ProportionOfReferencePeaksInDIA = [len([a for a in TopTenPeaksCoordsInDIA[i] if a % 2 == 1])/CandidateRefSpectraLibrary[i].shape[0]
+                                                                 for i in range(len(MassWindowCandidates))]                          
+                    
+                    RefPeptideCandidatesLocations = [LocateReferenceCoordsInDIA[i] for i in ReferencePeaksInDIA]   
+                    RefPeptideCandidateList = [CandidateRefSpectraLibrary[i] for i in ReferencePeaksInDIA]               
+                    RefPeptideCandidates = [MassWindowCandidates[i] for i in ReferencePeaksInDIA]                
+                    NormalizedRefPeptideCandidateList = [M[:,1]/sum(M[:,1]) for M in RefPeptideCandidateList]
+                               
+                    RefSpectraLibrarySparseRowIndices = (np.array([i for v in RefPeptideCandidatesLocations for i in v if i % 2 == 1]) + 1)/2                 
+                    RefSpectraLibrarySparseRowIndices = RefSpectraLibrarySparseRowIndices - 1 #Respect the 0-indexing                
+                    RefSpectraLibrarySparseColumnIndices = np.array([i for j in range(len(RefPeptideCandidates)) for i in [j]*len([k for k in RefPeptideCandidatesLocations[j] if k % 2 == 1])]) 
+                    RefSpectraLibrarySparseMatrixEntries = np.array([NormalizedRefPeptideCandidateList[k][i] for k in range(len(NormalizedRefPeptideCandidateList)) for i in range(len(NormalizedRefPeptideCandidateList[k])) 
+                                                                             if RefPeptideCandidatesLocations[k][i] % 2 == 1])
+                    
+                    if (len(RefSpectraLibrarySparseRowIndices) > 0 and len(RefSpectraLibrarySparseColumnIndices) > 0 and len(RefSpectraLibrarySparseMatrixEntries) > 0):                                                             
+                          
+                        UniqueRowIndices = [i for i in set(RefSpectraLibrarySparseRowIndices)]
+                        UniqueRowIndices.sort()
+                        
+                        DIASpectrumIntensities=DIASpectrum[UniqueRowIndices,1]  #Project the spectrum to those m/z bins at which at least one column of the coefficient matrix has a nonzero entry
+                        DIASpectrumIntensities=np.append(DIASpectrumIntensities,[0])    #Add a zero to the end of the DIA data vector to penalize 
+                                                                                        #peaks of library spectra not present in the DIA spectrum                
+                        
+                        
+                        #AUGMENT THE LIBRARY MATRIX WITH TOTAL ION INTENSITIES OF PEAKS OF LIBRARY SPECTRA THAT DON'T CORRESPOND TO PEAKS IN DIA SPECTRUM
+                        ReferencePeaksNotInDIA = np.array([k for v in RefPeptideCandidatesLocations for k in range(len(v)) if v[k] % 2 == 0])                             
+                        SparseColumnIndicesForPeaksNotInDIA = np.arange(len(RefPeptideCandidates))
+                        NumRowsOfLibraryMatrix = max(UniqueRowIndices)
+                        SparseRowIndicesForPeaksNotInDIA = [NumRowsOfLibraryMatrix+1]*len(SparseColumnIndicesForPeaksNotInDIA)                                   
+                        #Duplicate (i,j) entries are summed together, yielding total ion intensities                
+                        SparseMatrixEntriesForPeaksNotInDIA = np.array([np.sum([NormalizedRefPeptideCandidateList[j][k] 
+                                                                    for k in range(len(NormalizedRefPeptideCandidateList[j])) 
+                                                                    if RefPeptideCandidatesLocations[j][k] % 2 == 0]) 
+                                                                    for j in range(len(NormalizedRefPeptideCandidateList))])
+                        
+                        SparseRowIndices=np.append(RefSpectraLibrarySparseRowIndices,SparseRowIndicesForPeaksNotInDIA)
+                        SparseColumnIndices=np.append(RefSpectraLibrarySparseColumnIndices,SparseColumnIndicesForPeaksNotInDIA)
+                        SparseMatrixEntries=np.append(RefSpectraLibrarySparseMatrixEntries,SparseMatrixEntriesForPeaksNotInDIA)    
+                                      
+                        SparseRowIndices = stats.rankdata(SparseRowIndices,method='dense').astype(int) - 1 #Renumber the row indices according to the projected spectrum,
+                                                                                                        #respecting the 0-indexing                
+                        LibrarySparseMatrix = sparse.coo_matrix((SparseMatrixEntries,(SparseRowIndices,SparseColumnIndices)))
+                        LibraryCoeffs = sparse_nnls.lsqnonneg(LibrarySparseMatrix,DIASpectrumIntensities,{'show_progress': False})               
+                        LibraryCoeffs = LibraryCoeffs['x']
+                                    
+                NonzeroCoeffs = [c for c in LibraryCoeffs if c != 0]
+                NonzeroCoeffsAboveThreshold = NonzeroCoeffs
                 
-                LocateReferenceCoordsInDIA = [np.searchsorted(CentroidBreaks,M[:,0]) for M in CandidateRefSpectraLibrary]
-                   
-                TopTenPeaksCoordsInDIA = [np.searchsorted(CentroidBreaks,M[np.argsort(-M[:,1])[0:min(10,M.shape[0])],0]) for M in CandidateRefSpectraLibrary] 
-                ReferencePeaksInDIA = [i for i in range(len(MassWindowCandidates)) if 
-                                            len([a for a in TopTenPeaksCoordsInDIA[i] if a % 2 == 1]) > 5] #min(3,CandidateRefSpectraLibrary[i].shape[0])]     
-                ProportionOfReferencePeaksInDIA = [len([a for a in TopTenPeaksCoordsInDIA[i] if a % 2 == 1])/CandidateRefSpectraLibrary[i].shape[0]
-                                                             for i in range(len(MassWindowCandidates))]                          
-                
-                RefPeptideCandidatesLocations = [LocateReferenceCoordsInDIA[i] for i in ReferencePeaksInDIA]   
-                RefPeptideCandidateList = [CandidateRefSpectraLibrary[i] for i in ReferencePeaksInDIA]               
-                RefPeptideCandidates = [MassWindowCandidates[i] for i in ReferencePeaksInDIA]                
-                NormalizedRefPeptideCandidateList = [M[:,1]/sum(M[:,1]) for M in RefPeptideCandidateList]
-                           
-                RefSpectraLibrarySparseRowIndices = (np.array([i for v in RefPeptideCandidatesLocations for i in v if i % 2 == 1]) + 1)/2                 
-                RefSpectraLibrarySparseRowIndices = RefSpectraLibrarySparseRowIndices - 1 #Respect the 0-indexing                
-                RefSpectraLibrarySparseColumnIndices = np.array([i for j in range(len(RefPeptideCandidates)) for i in [j]*len([k for k in RefPeptideCandidatesLocations[j] if k % 2 == 1])]) 
-                RefSpectraLibrarySparseMatrixEntries = np.array([NormalizedRefPeptideCandidateList[k][i] for k in range(len(NormalizedRefPeptideCandidateList)) for i in range(len(NormalizedRefPeptideCandidateList[k])) 
-                                                                         if RefPeptideCandidatesLocations[k][i] % 2 == 1])
-                
-                if (len(RefSpectraLibrarySparseRowIndices) > 0 and len(RefSpectraLibrarySparseColumnIndices) > 0 and len(RefSpectraLibrarySparseMatrixEntries) > 0):                                                             
-                      
-                    UniqueRowIndices = [i for i in set(RefSpectraLibrarySparseRowIndices)]
-                    UniqueRowIndices.sort()
-                    
-                    DIASpectrumIntensities=DIASpectrum[UniqueRowIndices,1]  #Project the spectrum to those m/z bins at which at least one column of the coefficient matrix has a nonzero entry
-                    DIASpectrumIntensities=np.append(DIASpectrumIntensities,[0])    #Add a zero to the end of the DIA data vector to penalize 
-                                                                                    #peaks of library spectra not present in the DIA spectrum                
-                    
-                    
-                    #AUGMENT THE LIBRARY MATRIX WITH TOTAL ION INTENSITIES OF PEAKS OF LIBRARY SPECTRA THAT DON'T CORRESPOND TO PEAKS IN DIA SPECTRUM
-                    ReferencePeaksNotInDIA = np.array([k for v in RefPeptideCandidatesLocations for k in range(len(v)) if v[k] % 2 == 0])                             
-                    SparseColumnIndicesForPeaksNotInDIA = np.arange(len(RefPeptideCandidates))
-                    NumRowsOfLibraryMatrix = max(UniqueRowIndices)
-                    SparseRowIndicesForPeaksNotInDIA = [NumRowsOfLibraryMatrix+1]*len(SparseColumnIndicesForPeaksNotInDIA)                                   
-                    #Duplicate (i,j) entries are summed together, yielding total ion intensities                
-                    SparseMatrixEntriesForPeaksNotInDIA = np.array([np.sum([NormalizedRefPeptideCandidateList[j][k] 
-                                                                for k in range(len(NormalizedRefPeptideCandidateList[j])) 
-                                                                if RefPeptideCandidatesLocations[j][k] % 2 == 0]) 
-                                                                for j in range(len(NormalizedRefPeptideCandidateList))])
-                    
-                    SparseRowIndices=np.append(RefSpectraLibrarySparseRowIndices,SparseRowIndicesForPeaksNotInDIA)
-                    SparseColumnIndices=np.append(RefSpectraLibrarySparseColumnIndices,SparseColumnIndicesForPeaksNotInDIA)
-                    SparseMatrixEntries=np.append(RefSpectraLibrarySparseMatrixEntries,SparseMatrixEntriesForPeaksNotInDIA)    
-                                  
-                    SparseRowIndices = stats.rankdata(SparseRowIndices,method='dense').astype(int) - 1 #Renumber the row indices according to the projected spectrum,
-                                                                                                    #respecting the 0-indexing                
-                    LibrarySparseMatrix = sparse.coo_matrix((SparseMatrixEntries,(SparseRowIndices,SparseColumnIndices)))
-                    LibraryCoeffs = sparse_nnls.lsqnonneg(LibrarySparseMatrix,DIASpectrumIntensities,{'show_progress': False})               
-                    LibraryCoeffs = LibraryCoeffs['x']
-                                
-            NonzeroCoeffs = [c for c in LibraryCoeffs if c != 0]
-            NonzeroCoeffsAboveThreshold = NonzeroCoeffs
+                Output = [[0,index,0,0,0,0]]   
             
-            Output = [[0,index,0,0,0,0]]   
-        
-            if len(NonzeroCoeffs) > 0:        
-                RefSpectraIDs = [RefPeptideCandidates[j] for j in range(len(RefPeptideCandidates)) if LibraryCoeffs[j] != 0]
-                Output = [[NonzeroCoeffsAboveThreshold[i],index,RefSpectraIDs[i][0],RefSpectraIDs[i][1],precMZ,precRT] for i in range(len(NonzeroCoeffsAboveThreshold))]
-                
-            return Output
+                if len(NonzeroCoeffs) > 0:        
+                    RefSpectraIDs = [RefPeptideCandidates[j] for j in range(len(RefPeptideCandidates)) if LibraryCoeffs[j] != 0]
+                    Output = [[NonzeroCoeffsAboveThreshold[i],index,RefSpectraIDs[i][0],RefSpectraIDs[i][1],precMZ,precRT] for i in range(len(NonzeroCoeffsAboveThreshold))]
+                    
+                    with open(outputPath, "ab") as f:
+                        writer = csv.writer(f)
+                        writer.writerows(Output) 
 
 def RegressSpectraOntoLibraryWithDecoys(DIASpectrum,Library,tol,maxWindowOffset):
            
@@ -356,28 +365,28 @@ if __name__ == "__main__":
     
     path = os.path.expanduser(mzMLname+'.mzML')  
     DIArun = pymzml.run.Reader(path)
-    E = enumerate(DIArun)
+    # E = enumerate(DIArun)
 
-    start = time.time()     
+    # start = time.time()     
 
-    if StartOrEnd == "end":
-        if instrument == 'orbitrap':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i < Index]
-        if instrument == 'tof':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i < Index]
-    else:
-        if instrument == 'orbitrap':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i >= Index]
-        if instrument == 'tof':
-                res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i >= Index]
+    # if StartOrEnd == "end":
+    #     if instrument == 'orbitrap':
+    #             res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i < Index]
+    #     if instrument == 'tof':
+    #             res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i < Index]
+    # else:
+    #     if instrument == 'orbitrap':
+    #             res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if spectrum['ms level'] == 2.0 and i >= Index]
+    #     if instrument == 'tof':
+    #             res = [[spectrum.peaks,spectrum['precursors'][0]['mz'],spectrum['MS:1000016'],i] for i,spectrum in E if 'precursors' in spectrum.keys() and i >= Index]
 
 
-    print "Loaded {} MS2 spectra from {} in {} minutes.".format(len(res),path,round((time.time()-start)/60,1))
+    # print "Loaded {} MS2 spectra from {} in {} minutes.".format(len(res),path,round((time.time()-start)/60,1))
     
-    res=[(res[i][0],float(res[i][1]),float(res[i][2]),float(res[i][3]),float(res[i+1][1]) - float(res[i][1])) for i in range(len(res)-1)]
-    if width > 0:
-        res=[(res[i][0],float(res[i][1]),float(res[i][2]),float(res[i][3]),width) for i in range(len(res)-1)]
-    header=[[x[1],x[2],x[3]] for x in res]
+    # res=[(res[i][0],float(res[i][1]),float(res[i][2]),float(res[i][3]),float(res[i+1][1]) - float(res[i][1])) for i in range(len(res)-1)]
+    # if width > 0:
+    #     res=[(res[i][0],float(res[i][1]),float(res[i][2]),float(res[i][3]),width) for i in range(len(res)-1)]
+    # header=[[x[1],x[2],x[3]] for x in res]
 
     absolutePath = os.path.dirname(mzMLname)
     noPathName = os.path.basename(mzMLname)
@@ -390,47 +399,45 @@ if __name__ == "__main__":
     headerPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
                                                  '%s_%s_header.csv' % (noPathName, libName)))
     
-    with open(headerPath, "ab") as f:
-        writer = csv.writer(f)
-        writer.writerows(header)      
+    #with open(headerPath, "ab") as f:
+    #    writer = csv.writer(f)
+    #    writer.writerows(header)      
            
-    print "Header written to {}.".format(headerPath)
+    #print "Header written to {}.".format(headerPath)
     print "Analyzing MS2 spectra:"
 
-    MaxWindowPrecMZ = max(np.array([x[1] for x in res])) + max(np.array([x[4] for x in res]))
-    MaxOffset = max(np.array([x[4] for x in res]))
+    #MaxWindowPrecMZ = max(np.array([x[1] for x in res])) + max(np.array([x[4] for x in res]))
+    #MaxOffset = max(np.array([x[4] for x in res]))
 
-    SpectraLibrary = {k:SpectraLibrary[k] for k in SpectraLibrary if SpectraLibrary[k]['PrecursorMZ'] < MaxWindowPrecMZ}
+    #SpectraLibrary = {k:SpectraLibrary[k] for k in SpectraLibrary if SpectraLibrary[k]['PrecursorMZ'] < MaxWindowPrecMZ}
 
-    pool = multiprocessing.Pool(numProcessors)
-    with closing(pool) as p:
-        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibrary,Library=SpectraLibrary,tol=delta*1e-6,maxWindowOffset=MaxOffset), res), total=len(res)))
-        output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
-                        output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
-        p.terminate()  
-    
+    numSpectra = sum(1 for _ in DIArun)
     outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
                                                  '%s_%s_SpecterCoeffs.csv' % (noPathName, libName)))
-    
-    with open(outputPath, "ab") as f:
-        writer = csv.writer(f)
-        writer.writerows(output)      
-           
-    print "Output written to {}.".format(outputPath)
-    print "Analyzing MS2 spectra with decoys:"
-
     pool = multiprocessing.Pool(numProcessors)
     with closing(pool) as p:
-        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibraryWithDecoys,Library=SpectraLibrary,tol=delta*1e-6,maxWindowOffset=MaxOffset), res), total=len(res)))
-        output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
-                        output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
-        p.terminate()
-    
-    outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
-                                                 '%s_%s_SpecterCoeffsDecoys.csv' % (noPathName, libName)))
-    
-    with open(outputPath, "ab") as f:
-        writer = csv.writer(f)
-        writer.writerows(output)      
+        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibrary,Run=DIArun,Library=SpectraLibrary,headerPath=headerPath,
+                            outputPath=outputPath,tol=delta*1e-6,maxWindowOffset=MaxOffset), range(numSpectra)), total=len(res)))
+        #output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
+        #                output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))] 
+        p.terminate()  
+        
            
     print "Output written to {}.".format(outputPath)
+    #print "Analyzing MS2 spectra with decoys:"
+
+    #pool = multiprocessing.Pool(numProcessors)
+    # with closing(pool) as p:
+    #     output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibraryWithDecoys,Library=SpectraLibrary,tol=delta*1e-6,maxWindowOffset=MaxOffset), res), total=len(res)))
+    #     output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
+    #                     output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
+    #     p.terminate()
+    
+    # outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
+    #                                              '%s_%s_SpecterCoeffsDecoys.csv' % (noPathName, libName)))
+    
+    # with open(outputPath, "ab") as f:
+    #     writer = csv.writer(f)
+    #     writer.writerows(output)      
+           
+    # print "Output written to {}.".format(outputPath)
