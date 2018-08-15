@@ -24,8 +24,9 @@ import re
 import tqdm
 from contextlib import closing
 
-def RegressSpectraOntoLibrary(DIASpectrumIndex,Run,Library,headerPath,outputPath,tol,maxWindowOffset):
-                
+def RegressSpectraOntoLibrary(DIASpectrumIndex,mzmlPath,Library,headerPath,outputPath,tol,maxWindowOffset):
+            
+            Run = pymzml.run.Reader(mzmlPath)    
             spec = Run[DIASpectrumIndex]
             if spec['ms level'] != 2.0:
                 pass
@@ -37,7 +38,7 @@ def RegressSpectraOntoLibrary(DIASpectrumIndex,Run,Library,headerPath,outputPath
                 windowWidth = 10
                 with open(headerPath, "ab") as f:
                     writer = csv.writer(f)
-                    writer.writerows([precMZ,precRT,index])  
+                    writer.writerow([precMZ,precRT,index])  
                 
                 DIASpectrum = np.array(Run[DIASpectrumIndex].peaks)
                 RefSpectraLibrary = Library
@@ -126,7 +127,8 @@ def RegressSpectraOntoLibrary(DIASpectrumIndex,Run,Library,headerPath,outputPath
                 if len(NonzeroCoeffs) > 0:        
                     RefSpectraIDs = [RefPeptideCandidates[j] for j in range(len(RefPeptideCandidates)) if LibraryCoeffs[j] != 0]
                     Output = [[NonzeroCoeffsAboveThreshold[i],index,RefSpectraIDs[i][0],RefSpectraIDs[i][1],precMZ,precRT] for i in range(len(NonzeroCoeffsAboveThreshold))]
-                    
+                    #output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
+                    #                output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))] 
                     with open(outputPath, "ab") as f:
                         writer = csv.writer(f)
                         writer.writerows(Output) 
@@ -392,11 +394,11 @@ if __name__ == "__main__":
     noPathName = os.path.basename(mzMLname)
     libName = os.path.basename(libName)
     
-    outputDir = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults'))
+    outputDir = os.path.expanduser(os.path.join(absolutePath, 'SpecterStreamingResults'))
     if not os.path.exists(outputDir):
     	os.makedirs(outputDir)
 
-    headerPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
+    headerPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterStreamingResults',
                                                  '%s_%s_header.csv' % (noPathName, libName)))
     
     #with open(headerPath, "ab") as f:
@@ -408,21 +410,23 @@ if __name__ == "__main__":
 
     #MaxWindowPrecMZ = max(np.array([x[1] for x in res])) + max(np.array([x[4] for x in res]))
     #MaxOffset = max(np.array([x[4] for x in res]))
-
+    MaxOffset = 10
     #SpectraLibrary = {k:SpectraLibrary[k] for k in SpectraLibrary if SpectraLibrary[k]['PrecursorMZ'] < MaxWindowPrecMZ}
 
     numSpectra = sum(1 for _ in DIArun)
-    outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterResults',
-                                                 '%s_%s_SpecterCoeffs.csv' % (noPathName, libName)))
+    outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterStreamingResults',
+                                                 '%s_%s_SpecterStreamingCoeffs.csv' % (noPathName, libName)))
     pool = multiprocessing.Pool(numProcessors)
     with closing(pool) as p:
-        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibrary,Run=DIArun,Library=SpectraLibrary,headerPath=headerPath,
-                            outputPath=outputPath,tol=delta*1e-6,maxWindowOffset=MaxOffset), range(numSpectra)), total=len(res)))
+        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibrary,mzmlPath=path,Library=SpectraLibrary,headerPath=headerPath,
+                            outputPath=outputPath,tol=delta*1e-6,maxWindowOffset=MaxOffset), range(1,numSpectra+1)), total=numSpectra))
         #output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
         #                output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))] 
-        p.terminate()  
+    #    p.terminate()  
         
-           
+    #for i in tqdm.tqdm(range(1,numSpectra+1)):
+    #    RegressSpectraOntoLibrary(i,mzmlPath=path,Library=SpectraLibrary,headerPath=headerPath,
+    #                               outputPath=outputPath,tol=delta*1e-6,maxWindowOffset=MaxOffset)      
     print "Output written to {}.".format(outputPath)
     #print "Analyzing MS2 spectra with decoys:"
 
