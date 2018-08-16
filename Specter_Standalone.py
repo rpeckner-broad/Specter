@@ -417,12 +417,12 @@ if __name__ == "__main__":
     outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterStreamingResults',
                                                  '%s_%s_SpecterStreamingCoeffs.csv' % (noPathName, libName)))
     pool = multiprocessing.Pool(numProcessors)
-    with closing(pool) as p:
-        output = list(tqdm.tqdm(p.imap(partial(RegressSpectraOntoLibrary,mzmlPath=path,Library=SpectraLibrary,headerPath=headerPath,
-                            outputPath=outputPath,tol=delta*1e-6,maxWindowOffset=MaxOffset), range(1,numSpectra+1)), total=numSpectra))
+    output = list(tqdm.tqdm(pool.imap(partial(RegressSpectraOntoLibrary,mzmlPath=path,Library=SpectraLibrary,headerPath=headerPath,
+                            outputPath=outputPath,tol=delta*1e-6,maxWindowOffset=MaxOffset), range(1,numSpectra)), total=numSpectra))
         #output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
         #                output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))] 
-    #    p.terminate()  
+    pool.close()
+    pool.join()
         
     #for i in tqdm.tqdm(range(1,numSpectra+1)):
     #    RegressSpectraOntoLibrary(i,mzmlPath=path,Library=SpectraLibrary,headerPath=headerPath,
