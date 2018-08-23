@@ -413,7 +413,7 @@ if __name__ == "__main__":
     MaxOffset = 10
     #SpectraLibrary = {k:SpectraLibrary[k] for k in SpectraLibrary if SpectraLibrary[k]['PrecursorMZ'] < MaxWindowPrecMZ}
 
-    numSpectra = sum(1 for _ in DIArun)
+    numSpectra = DIArun.info['spectrum_count']
     outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterStreamingResults',
                                                  '%s_%s_SpecterStreamingCoeffs.csv' % (noPathName, libName)))
     pool = multiprocessing.Pool(numProcessors)
