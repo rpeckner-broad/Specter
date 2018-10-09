@@ -1,5 +1,6 @@
 name: SpecterEnv
 channels:
+  - anaconda
   - blaze
   - bioconda
   - defaults
