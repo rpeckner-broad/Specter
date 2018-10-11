@@ -22,18 +22,34 @@ import zlib
 import csv
 import re
 
-def RegressSpectraOntoLibrary(DIASpectraIterator,Library,tol,maxWindowOffset):
+def RegressSpectraOntoLibrary(DIASpectrumIndexIterator,mzmlPath,Library,headerPath,outputPath,tol,maxWindowOffset):
         
         RefSpectraLibrary = Library.value 
         
-        for DIASpectrum in DIASpectraIterator:        
-        
-            precMZ = float(DIASpectrum[1])     
-            precRT = float(DIASpectrum[2])  #MS2 scan retention time, in minutes
-            index = DIASpectrum[3]
-            windowWidth = DIASpectrum[4]
+        for DIASpectrumIndex,windowWidth in DIASpectrumIndexIterator:
             
-            DIASpectrum = np.array(DIASpectrum[0])
+            Run = pymzml.run.Reader(mzmlPath)    
+            spec = Run[DIASpectrumIndex]
+            if spec['ms level'] != 2.0:
+                pass
+            else:
+                precMZ = float(spec['precursors'][0]['mz'])    
+                precRT = float(spec['MS:1000016'])  #MS2 scan retention time, in minutes
+                index = DIASpectrumIndex
+                #windowWidth = DIASpectrum[4]
+                #windowWidth = 10
+                with open(headerPath, "ab") as f:
+                    writer = csv.writer(f)
+                    writer.writerow([precMZ,precRT,index])  
+                
+                DIASpectrum = np.array(Run[DIASpectrumIndex].peaks)
+        
+            #precMZ = float(DIASpectrum[1])     
+            #precRT = float(DIASpectrum[2])  #MS2 scan retention time, in minutes
+            #index = DIASpectrum[3]
+            #windowWidth = DIASpectrum[4]
+            
+            #DIASpectrum = np.array(DIASpectrum[0])
                        
             LibraryCoeffs = []
             
@@ -378,28 +394,36 @@ if __name__ == "__main__":
     	os.makedirs(outputDir)
 
     headerPath = os.path.expanduser(absolutePath+'/SpecterResults/'+noPathName+'_'+libName+'_header.csv')     
-    
-    with open(headerPath, "ab") as f:
-        writer = csv.writer(f)
-        writer.writerows(header)      
+  
+  #  with open(headerPath, "ab") as f:
+  #      writer = csv.writer(f)
+  #      writer.writerows(header)      
            
-    print "Output written to {}.".format(headerPath)
-
+  #  print "Output written to {}.".format(headerPath)
+    
     MaxWindowPrecMZ = max(np.array([x[1] for x in res])) + max(np.array([x[4] for x in res]))
     MaxOffset = max(np.array([x[4] for x in res]))
 
     SpectraLibrary = {k:SpectraLibrary[k] for k in SpectraLibrary if SpectraLibrary[k]['PrecursorMZ'] < MaxWindowPrecMZ}
-
+    
+    numSpectra = DIArun.info['spectrum_count']
+    outputPath = os.path.expanduser(os.path.join(absolutePath, 'SpecterStreamingResults',
+                                                 '%s_%s_SpecterStreamingCoeffs.csv' % (noPathName, libName)))
+    
+    res = [(i,windowWidths[i]) for i in range(1,numSpectra)]
+   
     conf = (SparkConf().set("spark.driver.maxResultSize", "25g"))
-        
+       
     sc = SparkContext(conf=conf,appName="Specter",pyFiles=['sparse_nnls.py'])
     
     #Recast the library as a broadcast variable to improve performance
     BroadcastLibrary = sc.broadcast(SpectraLibrary)  
     
+    
     res = sc.parallelize(res, numPartitions)
     
-    output = res.mapPartitions(partial(RegressSpectraOntoLibrary, Library=BroadcastLibrary, tol=delta*1e-6, maxWindowOffset = MaxOffset)).collect()  
+    output = res.mapPartitions(partial(RegressSpectraOntoLibrary,mzmlPath=path,Library=SpectraLibrary,headerPath=headerPath,
+                            outputPath=outputPath,tol=delta*1e-6,maxWindowOffset=MaxOffset)).collect()  
     
     output = [[output[i][j][0],output[i][j][1],output[i][j][2],output[i][j][3],
                         output[i][j][4],output[i][j][5]] for i in range(len(output)) for j in range(len(output[i]))]
